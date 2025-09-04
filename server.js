@@ -1,11 +1,16 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 app.use(cors());
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 let stock = { normal: [], mirage: [] };
-let nextRefresh = Date.now() + 60 * 60 * 1000; // 1 hour from now
+let nextRefresh = Date.now() + 60 * 60 * 1000;
 
 const fruits = [
   "Dragon", "Leopard", "Dough", "Venom", "Phoenix",
@@ -13,7 +18,6 @@ const fruits = [
   "Bomb", "Chop", "Spring", "Smoke", "Spin"
 ];
 
-// Helper to generate random stock
 function generateStock() {
   stock.normal = [];
   stock.mirage = [];
@@ -31,20 +35,40 @@ function generateStock() {
     });
   }
 
-  nextRefresh = Date.now() + 60 * 60 * 1000; // reset timer
+  nextRefresh = Date.now() + 60 * 60 * 1000;
 }
 
-generateStock(); // first run
-setInterval(generateStock, 60 * 60 * 1000); // refresh every hour
+generateStock();
+setInterval(generateStock, 60 * 60 * 1000);
 
-// API endpoint
-app.get("/api/stock", (req, res) => {
-  res.json({
-    nextRefresh,
-    stock
-  });
+// =================== API endpoints ===================
+app.get("/api/stock", (req, res) => res.json({ nextRefresh, stock }));
+app.get("/api/normal", (req, res) => res.json({ nextRefresh, stock: stock.normal }));
+app.get("/api/mirage", (req, res) => res.json({ nextRefresh, stock: stock.mirage }));
+
+// =================== Webpages ===================
+app.use(express.static(__dirname)); // serve index.html
+
+app.get("/normal", (req, res) => {
+  res.send(`
+    <h1>Normal Stock</h1>
+    <ul>
+      ${stock.normal.map(f => `<li>${f.name} - ${f.cost} - ${f.robux}</li>`).join("")}
+    </ul>
+    <p><a href="/">Back to Main</a></p>
+  `);
 });
 
-// Start server
+app.get("/mirage", (req, res) => {
+  res.send(`
+    <h1>Mirage Stock</h1>
+    <ul>
+      ${stock.mirage.map(f => `<li>${f.name} - ${f.cost} - ${f.robux}</li>`).join("")}
+    </ul>
+    <p><a href="/">Back to Main</a></p>
+  `);
+});
+
+// =================== Server start ===================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`API running on port ${PORT}`));
+app.listen(PORT, () => console.log(`API + Web running on port ${PORT}`));
