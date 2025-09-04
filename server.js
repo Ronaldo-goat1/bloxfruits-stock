@@ -1,58 +1,50 @@
 import express from "express";
 import cors from "cors";
-import fetch from "node-fetch";
-import cheerio from "cheerio";
 
 const app = express();
 app.use(cors());
 
-let stockData = { normal: [], mirage: [], lastUpdated: new Date(), nextRefresh: {} };
+let stock = { normal: [], mirage: [] };
+let nextRefresh = Date.now() + 60 * 60 * 1000; // 1 hour from now
 
-async function fetchStock() {
-  try {
-    const res = await fetch("https://fruityblox.com/stock");
-    const html = await res.text();
-    const $ = cheerio.load(html);
+const fruits = [
+  "Dragon", "Leopard", "Dough", "Venom", "Phoenix",
+  "Buddha", "Magma", "Light", "Ice", "Flame",
+  "Bomb", "Chop", "Spring", "Smoke", "Spin"
+];
 
-    const normal = [];
-    const mirage = [];
+// Helper to generate random stock
+function generateStock() {
+  stock.normal = [];
+  stock.mirage = [];
 
-    $("#normal-selector .stock-item").each((_, el) => {
-      normal.push({
-        name: $(el).find(".fruit-name").text().trim(),
-        cost: $(el).find(".money").text().trim(),
-        robux: $(el).find(".robux").text().trim(),
-      });
+  for (let i = 0; i < 4; i++) {
+    stock.normal.push({
+      name: fruits[Math.floor(Math.random() * fruits.length)],
+      cost: `${(Math.floor(Math.random() * 20) + 1) * 100000}$`,
+      robux: `${Math.floor(Math.random() * 2700) + 50} R$`
     });
-
-    $("#mirage-selector .stock-item").each((_, el) => {
-      mirage.push({
-        name: $(el).find(".fruit-name").text().trim(),
-        cost: $(el).find(".money").text().trim(),
-        robux: $(el).find(".robux").text().trim(),
-      });
+    stock.mirage.push({
+      name: fruits[Math.floor(Math.random() * fruits.length)],
+      cost: `${(Math.floor(Math.random() * 20) + 1) * 100000}$`,
+      robux: `${Math.floor(Math.random() * 2700) + 50} R$`
     });
-
-    const now = new Date();
-    stockData = {
-      normal,
-      mirage,
-      lastUpdated: now,
-      nextRefresh: {
-        normal: new Date(now.getTime() + 4 * 60 * 60 * 1000),
-        mirage: new Date(now.getTime() + 2 * 60 * 60 * 1000),
-      },
-    };
-
-    console.log("✅ Stock updated:", stockData.lastUpdated.toLocaleTimeString());
-  } catch (err) {
-    console.error("❌ Error:", err.message);
   }
+
+  nextRefresh = Date.now() + 60 * 60 * 1000; // reset timer
 }
 
-fetchStock();
-setInterval(fetchStock, 5 * 60 * 1000);
+generateStock(); // first run
+setInterval(generateStock, 60 * 60 * 1000); // refresh every hour
 
-app.get("/api/stock", (req, res) => res.json(stockData));
+// API endpoint
+app.get("/api/stock", (req, res) => {
+  res.json({
+    nextRefresh,
+    stock
+  });
+});
 
-app.listen(3000, () => console.log("🚀 API running on http://localhost:3000/api/stock"));
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`API running on port ${PORT}`));
