@@ -6,14 +6,25 @@
   <style>
     body { font-family: Arial, sans-serif; background: #111; color: #eee; text-align: center; padding: 20px; }
     h1 { color: #ffcc00; }
-    .stock { display: flex; justify-content: center; gap: 40px; margin-top: 20px; }
+    .stock { display: flex; justify-content: center; gap: 40px; margin-top: 20px; flex-wrap: wrap; }
     .list { background: #222; padding: 20px; border-radius: 10px; width: 300px; }
     .item { margin: 5px 0; }
+    .nav { margin-top: 20px; }
+    .btn {
+      background: #ffcc00; color: #111; padding: 10px 20px; margin: 5px;
+      text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block;
+    }
+    .btn:hover { background: #ffaa00; }
   </style>
 </head>
 <body>
   <h1>Blox Fruits Stock</h1>
   <p>Next Refresh In: <span id="countdown">loading...</span></p>
+
+  <div class="nav">
+    <a href="/normal" class="btn">Normal Stock Page</a>
+    <a href="/mirage" class="btn">Mirage Stock Page</a>
+  </div>
 
   <div class="stock">
     <div class="list">
@@ -31,38 +42,4 @@
       const res = await fetch("/api/stock");
       const data = await res.json();
 
-      const normalDiv = document.getElementById("normal");
-      const mirageDiv = document.getElementById("mirage");
-
-      normalDiv.innerHTML = "";
-      mirageDiv.innerHTML = "";
-
-      data.stock.normal.forEach(fruit => {
-        normalDiv.innerHTML += `<div class="item">${fruit.name} - ${fruit.cost} - ${fruit.robux}</div>`;
-      });
-
-      data.stock.mirage.forEach(fruit => {
-        mirageDiv.innerHTML += `<div class="item">${fruit.name} - ${fruit.cost} - ${fruit.robux}</div>`;
-      });
-
-      function updateCountdown() {
-        const now = Date.now();
-        const diff = data.nextRefresh - now;
-        if (diff <= 0) {
-          document.getElementById("countdown").innerText = "Refreshing...";
-          return;
-        }
-        const mins = Math.floor(diff / 60000);
-        const secs = Math.floor((diff % 60000) / 1000);
-        document.getElementById("countdown").innerText = `${mins}m ${secs}s`;
-      }
-
-      setInterval(updateCountdown, 1000);
-      updateCountdown();
-    }
-
-    loadStock();
-    setInterval(loadStock, 60000); // refresh every minute
-  </script>
-</body>
-</html>
+      const normalDiv = document.getElementById("nor
