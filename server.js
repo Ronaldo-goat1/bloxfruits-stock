@@ -52,20 +52,20 @@ app.use(express.static(__dirname)); // serve index.html
 app.get("/normal", (req, res) => {
   res.send(`
     <h1>Normal Stock</h1>
+    <a href="/" style="display:inline-block;margin:10px;padding:8px 15px;background:#ffcc00;color:#111;font-weight:bold;border-radius:5px;text-decoration:none;">⬅ Back to Home</a>
     <ul>
       ${stock.normal.map(f => `<li>${f.name} - ${f.cost} - ${f.robux}</li>`).join("")}
     </ul>
-    <p><a href="/">Back to Main</a></p>
   `);
 });
 
 app.get("/mirage", (req, res) => {
   res.send(`
     <h1>Mirage Stock</h1>
+    <a href="/" style="display:inline-block;margin:10px;padding:8px 15px;background:#ffcc00;color:#111;font-weight:bold;border-radius:5px;text-decoration:none;">⬅ Back to Home</a>
     <ul>
       ${stock.mirage.map(f => `<li>${f.name} - ${f.cost} - ${f.robux}</li>`).join("")}
     </ul>
-    <p><a href="/">Back to Main</a></p>
   `);
 });
 
