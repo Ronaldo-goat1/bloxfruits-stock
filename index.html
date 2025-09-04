@@ -2,44 +2,110 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blox Fruits Stock</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #111; color: #eee; text-align: center; padding: 20px; }
-    h1 { color: #ffcc00; }
-    .stock { display: flex; justify-content: center; gap: 40px; margin-top: 20px; flex-wrap: wrap; }
-    .list { background: #222; padding: 20px; border-radius: 10px; width: 300px; }
-    .item { margin: 5px 0; }
-    .nav { margin-top: 20px; }
-    .btn {
-      background: #ffcc00; color: #111; padding: 10px 20px; margin: 5px;
-      text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block;
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #f5f5f5;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
     }
-    .btn:hover { background: #ffaa00; }
+    h1 {
+      color: #ffcc00;
+    }
+    .stock-container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 20px;
+    }
+    .stock-box {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 20px;
+      width: 300px;
+      box-shadow: 0 0 12px rgba(255, 204, 0, 0.3);
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      padding: 8px 0;
+      border-bottom: 1px solid #333;
+    }
+    .countdown {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #ccc;
+    }
+    a {
+      color: #ffcc00;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
-  <h1>Blox Fruits Stock</h1>
-  <p>Next Refresh In: <span id="countdown">loading...</span></p>
-
-  <div class="nav">
-    <a href="/normal" class="btn">Normal Stock Page</a>
-    <a href="/mirage" class="btn">Mirage Stock Page</a>
+  <h1>🍍 Blox Fruits Live Stock</h1>
+  <div class="stock-container">
+    <div class="stock-box">
+      <h2>Normal Stock</h2>
+      <ul id="normalStock">Loading...</ul>
+    </div>
+    <div class="stock-box">
+      <h2>Mirage Stock</h2>
+      <ul id="mirageStock">Loading...</ul>
+    </div>
   </div>
 
-  <div class="stock">
-    <div class="list">
-      <h2>Normal Stock</h2>
-      <div id="normal"></div>
-    </div>
-    <div class="list">
-      <h2>Mirage Stock</h2>
-      <div id="mirage"></div>
-    </div>
+  <div class="countdown">
+    ⏳ Next Refresh In: <span id="timer">Loading...</span>
   </div>
 
   <script>
     async function loadStock() {
-      const res = await fetch("/api/stock");
-      const data = await res.json();
+      try {
+        const res = await fetch("/api/stock");
+        const data = await res.json();
 
-      const normalDiv = document.getElementById("nor
+        const normalList = document.getElementById("normalStock");
+        normalList.innerHTML = "";
+        data.normal.forEach(fruit => {
+          normalList.innerHTML += `<li>${fruit.name} — ${fruit.beli} / ${fruit.robux}</li>`;
+        });
+
+        const mirageList = document.getElementById("mirageStock");
+        mirageList.innerHTML = "";
+        data.mirage.forEach(fruit => {
+          mirageList.innerHTML += `<li>${fruit.name} — ${fruit.beli} / ${fruit.robux}</li>`;
+        });
+      } catch (err) {
+        console.error("Error loading stock:", err);
+      }
+    }
+
+    // Countdown (4 hours)
+    let nextRefresh = Date.now() + 4 * 60 * 60 * 1000;
+    function updateCountdown() {
+      const now = Date.now();
+      const diff = nextRefresh - now;
+      if (diff <= 0) {
+        nextRefresh = Date.now() + 4 * 60 * 60 * 1000;
+        loadStock();
+      }
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+      document.getElementById("timer").textContent =
+        `${hours}h ${mins}m ${secs}s`;
+    }
+
+    loadStock();
+    setInterval(loadStock, 60 * 1000); // refresh every 1 min
+    setInterval(updateCountdown, 1000); // update timer every sec
+  </script>
+</body>
+</html>
