@@ -70,10 +70,29 @@ function renderPage(title, items) {
     </head>
     <body>
       <h1>${title}</h1>
+      <p>Next Refresh In: <span id="countdown">loading...</span></p>
       <a href="/" class="btn">⬅ Back to Home</a>
       <ul>
         ${items.map(f => `<li>${f.name} - ${f.cost} - ${f.robux}</li>`).join("")}
       </ul>
+
+      <script>
+        const nextRefresh = ${nextRefresh};
+        function updateCountdown() {
+          const now = Date.now();
+          const diff = nextRefresh - now;
+          const cd = document.getElementById("countdown");
+          if (diff <= 0) {
+            cd.innerText = "Refreshing...";
+            return;
+          }
+          const mins = Math.floor(diff / 60000);
+          const secs = Math.floor((diff % 60000) / 1000);
+          cd.innerText = mins + "m " + secs + "s";
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+      </script>
     </body>
     </html>
   `;
