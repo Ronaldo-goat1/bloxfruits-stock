@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blox Fruits Stock</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f7fa; max-width: 700px; margin: auto; padding: 20px; }
+    h1 { text-align: center; }
+    .stock-section { background: #fff; padding: 20px; margin: 20px 0; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    ul { list-style: none; padding: 0; }
+    li { padding: 8px; border-bottom: 1px solid #eee; }
+    li:last-child { border-bottom: none; }
+    .fruit-name { font-weight: bold; }
+    .price { color: #0077cc; font-size: 14px; }
+    .time { font-size: 12px; color: gray; margin-top: 10px; }
+    .countdown { font-size: 14px; font-weight: bold; color: #d9534f; }
+  </style>
+</head>
+<body>
+  <h1>🍏 Blox Fruits Stock 🍍</h1>
+
+  <div class="stock-section">
+    <h2>Normal Dealer</h2>
+    <p>Next refresh in: <span id="normal-countdown" class="countdown">Loading...</span></p>
+    <ul id="normal-list"></ul>
+  </div>
+
+  <div class="stock-section">
+    <h2>Mirage Dealer</h2>
+    <p>Next refresh in: <span id="mirage-countdown" class="countdown">Loading...</span></p>
+    <ul id="mirage-list"></ul>
+  </div>
+
+  <p class="time">Last updated: <span id="lastUpdated"></span></p>
+
+  <script>
+    let refreshTimes = {};
+
+    async function fetchStock() {
+      const res = await fetch("http://localhost:3000/api/stock"); // replace with deployed API URL later
+      const data = await res.json();
+
+      document.getElementById("normal-list").innerHTML =
+        data.normal.map(f => `<li><span class="fruit-name">${f.name}</span> — <span class="price">${f.cost}</span> / ${f.robux}💎</li>`).join("");
+
+      document.getElementById("mirage-list").innerHTML =
+        data.mirage.map(f => `<li><span class="fruit-name">${f.name}</span> — <span class="price">${f.cost}</span> / ${f.robux}💎</li>`).join("");
+
+      document.getElementById("lastUpdated").textContent =
+        new Date(data.lastUpdated).toLocaleString();
+
+      refreshTimes.normal = new Date(data.nextRefresh.normal);
+      refreshTimes.mirage = new Date(data.nextRefresh.mirage);
+    }
+
+    function updateCountdowns() {
+      const now = new Date();
+      function formatDiff(future) {
+        const diff = Math.max(0, future - now);
+        const h = Math.floor(diff / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+        return `${h}h ${m}m ${s}s`;
+      }
+      if (refreshTimes.normal) {
+        document.getElementById("normal-countdown").textContent = formatDiff(refreshTimes.normal);
+      }
+      if (refreshTimes.mirage) {
+        document.getElementById("mirage-countdown").textContent = formatDiff(refreshTimes.mirage);
+      }
+    }
+
+    fetchStock();
+    setInterval(fetchStock, 60_000);
+    setInterval(updateCountdowns, 1000);
+  </script>
+</body>
+</html>
